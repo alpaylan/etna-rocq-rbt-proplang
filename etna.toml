@@ -1,0 +1,3 @@
+name = "RBTProplang"
+language = "Rocq"
+description = "Red-Black Tree workload using the PropLang runner framework (Rocq/Coq)."
