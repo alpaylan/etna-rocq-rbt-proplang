@@ -19,7 +19,7 @@ Open Scope Z_scope.
 
 (* --------------------- Generator --------------------- *)
 
-Derive (Arbitrary, Shrink) for Tree.
+Derive Instance (Arbitrary, Shrink) for Tree.
 
 #[local] Instance dec_eq_tree : Dec_Eq Tree.
 Proof. dec_eq. Defined.

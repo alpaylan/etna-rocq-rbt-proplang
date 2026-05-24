@@ -16,7 +16,7 @@ From PropLang Require Import PropLang.
 Local Open Scope prop_scope.
 Open Scope Z_scope.
 
-Derive (Shrink) for Tree.
+Derive Instance (Shrink) for Tree.
 
 
 
@@ -49,7 +49,7 @@ GenSizedSuchThat _ (fun x => between lo x hi) :=
                         else ret None
 |}%nat.
 
-Derive ArbitrarySizedSuchThat for (fun t => red_black_bst c h lo hi t).
+Derive Instance ArbitrarySizedSuchThat for (fun t => red_black_bst c h lo hi t).
 
 Definition gRbt := 
     (@arbitrarySizeST _ (fun t => red_black_bst B 3 0 100 t) _ 10).

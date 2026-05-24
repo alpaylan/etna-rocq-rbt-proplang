@@ -12,7 +12,9 @@ Import ListNotations.
 
 
 From RBTProplang Require Import Impl Spec.
-From PropLang Require Import PropLang.
+From PropLang Require Import PropLang SeedPool.
+From PropLang.seedpool Require Import Heap.
+From PropLang.loops Require Import FuzzLoop.
 
 Local Open Scope prop_scope.
 (* --------------------- Generator --------------------- *)
@@ -31,7 +33,7 @@ Local Open Scope nat_scope.
 #[local] Instance FuzzyNat : Fuzzy nat :=
 {| fuzz n :=  (choose (n - 5, n + 5)) |}.
 
-Derive (Arbitrary, Show, Sized, Fuzzy) for Tree.
+Derive Instance(Arbitrary, Show, Sized, Fuzzy) for Tree.
 
 #[local] Instance FuzzyProd {A} `{Fuzzy A} {B} `{Fuzzy B}  : Fuzzy (A * B)  :=
 {| 

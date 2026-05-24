@@ -1,6 +1,11 @@
 name = "rbt-proplang-rocq"
 language = "Rocq"
 description = "Red-Black Tree workload using the PropLang runner framework (Rocq/Coq)."
+strategies = [
+  "BespokeGenerator", 
+  "SpecificationBasedGenerator",
+  "TypeBasedGenerator",
+  "TypeBasedFuzzer"]
 
 mutations = [
   "insert_1",

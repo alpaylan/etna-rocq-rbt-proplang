@@ -16,7 +16,7 @@ From PropLang Require Import PropLang.
 Local Open Scope prop_scope.
 Open Scope Z_scope.
 
-Derive (Shrink) for Tree.
+Derive Instance (Shrink) for Tree.
 Definition genZ := choose (-20, 20).
 
 Fixpoint gen_kvs (s : nat) : G (list (Z * Z)) :=

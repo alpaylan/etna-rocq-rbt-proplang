@@ -15,14 +15,30 @@ Notation "A <?? B" := (Z_lt_le_dec A B) (at level 70, no associativity).
 
 
 Inductive Color := R | B.
-Derive (Arbitrary, Show) for Color.
+Derive Instance (Arbitrary, Show) for Color.
 
 
 Inductive Tree :=
     | E : Tree
     | T : Color -> Tree -> Z -> Z -> Tree -> Tree.
 
-Derive (Show) for Tree.
+
+Local Open Scope string_scope.
+
+#[global] Instance ShowTree : Show Tree :=
+{|
+  show t := 
+    let fix aux (t : Tree) : string :=
+      match t with
+      | E => "(E)"
+      | T c l k v r => "(T (" ++ show c ++ ") " ++ aux l ++ " " ++ show k ++ " " ++ show v ++ " " ++ aux r ++ ")"
+      end in
+    aux t
+|}.
+
+Local Close Scope string_scope.
+
+
 
 Axiom fuel : nat. Extract Constant fuel => "100000".
 
@@ -47,34 +63,36 @@ Definition balance (col: Color) (tl: Tree) (key: Z) (val: Z) (tr: Tree) : Tree :
     match col, tl, key, val, tr with
     (*! *)
     | B, (T R (T R a x vx b) y vy c), z, vz, d => T R (T B a x vx b) y vy (T B c z vz d)
-(*!! swap_cd *)
-(*! 
+    (*!! swap_cd *)
+    (*!
     | B, (T R (T R a x vx b) y vy c), z, vz, d => T R (T B a x vx b) y vy (T B d z vz c) 
-*)
+    *)
+    (* !*)
     | B, (T R a x vx (T R b y vy c)), z, vz, d => T R (T B a x vx b) y vy (T B c z vz d)
-(*! *)
+    (*! *)
     | B, a, x, vx, (T R (T R b y vy c) z vz d) => T R (T B a x vx b) y vy (T B c z vz d)
-(*!! swap_bc *)
-(*! 
-    | B, a, x, vx, (T R (T R b y vy c) z vz d) => T R (T B a x vx c) y vy (T B b z vz d) 
-*)
+    (*!! swap_bc *)
+    (*!
+    | B, a, x, vx, (T R (T R b y vy c) z vz d) => T R (T B a x vx c) y vy (T B b z vz d)
+    *)
+    (* !*)
     | B, a, x, vx, (T R b y vy (T R c z vz d)) => T R (T B a x vx b) y vy (T B c z vz d)
     | rb, a, x, vx, b => T rb a x vx b
     end.
 
-(* ----------
- *)
+(* ---------- *)
 Set Warnings "-non-recursive, -fixpoints".
 Fixpoint insert (key: Z) (val: Z) (t: Tree) : Tree :=
     let fix ins (x: Z) (vx: Z) (s: Tree) : Tree :=
     match x, vx, s with
-    | x, vx, E => 
+    | x, vx, E =>
     (*! *)
     T R E x vx E
     (*!! miscolor_insert *)
-    (*! 
-    T B E x vx E 
+    (*!
+    T B E x vx E
     *)
+    (* !*)
     | x, vx, (T rb a y vy b) =>
     (*! *)
     if x <?? y then balance rb (ins x vx a) y vy b
@@ -107,6 +125,7 @@ Fixpoint insert (key: Z) (val: Z) (t: Tree) : Tree :=
     else if y <?? x then T rb a y vy (insert x vx b)
     else T rb a y vx b
     *)
+    (* !*)
     end
     in blacken (ins key val t).
 
@@ -119,13 +138,14 @@ Definition balLeft (tl: Tree) (k: Z) (v: Z) (tr: Tree) : option Tree :=
     | (T R a x vx b), y, vy, c => Some (T R (T B a x vx b) y vy c)
     | bl, x, vx, (T B a y vy b) => Some (balance B bl x vx (T R a y vy b))
     | bl, x, vx, (T R (T B a y vy b) z vz c) =>
-  (*! *)
+    (*! *)
     c' <- (redden c) ;;
     Some (T R (T B bl x vx a) y vy (balance B b z vz c'))
-  (*!! miscolor_balLeft *) 
-  (*! 
-  Some (T R (T B bl x vx a) y vy (balance B b z vz c) )
-  *)
+    (*!! miscolor_balLeft *)
+    (*!
+    Some (T R (T B bl x vx a) y vy (balance B b z vz c) )
+    *)
+    (* !*)
     | _, _, _, _ => None
     end.
 
@@ -138,10 +158,11 @@ Definition balRight (tl: Tree) (k: Z) (v: Z) (tr: Tree) : option Tree :=
     (*! *)
         a' <- redden a ;;
         Some (T R (balance B a' x vx b) y vy (T B c z vz bl))
-    (*!! miscolor_balRight *) 
-    (*! 
+    (*!! miscolor_balRight *)
+    (*!
         Some (T R (balance B a x vx b) y vy (T B c z vz bl) )
     *)
+    (* !*)
     | _, _, _, _ => None
     end.
 
@@ -155,36 +176,40 @@ Fixpoint _join (t1: Tree) (t2: Tree) (f: nat) : option Tree :=
         | (T R a x vx b), (T R c y vy d) =>
             match _join b c f' with
             | None => None
-            | Some(T R b' z vz c') => 
+            | Some(T R b' z vz c') =>
             (*! *)
                 Some (T R (T R a x vx b') z vz (T R c' y vy d))
             (*!! miscolor_join_1 *)
-            (*! Some(T R (T B a x vx b') z vz (T B c' y vy d)) *)
+            (*!
+Some(T R (T B a x vx b') z vz (T B c' y vy d))
+            *)
+            (* !*)
             | Some(bc) => Some(T R a x vx (T R bc y vy d))
             end
         | (T B a x vx b), (T B c y vy d) =>
             match _join b c f' with
             | None => None
-            | Some(T R b' z vz c') => 
+            | Some(T R b' z vz c') =>
             (*! *)
             Some(T R (T B a x vx b') z vz (T B c' y vy d))
             (*!! miscolor_join_2 *)
-            (*! 
+            (*!
             Some(T R (T R a x vx b') z vz (T R c' y vy d))
             *)
-            | Some(bc) => 
+            (* !*)
+            | Some(bc) =>
                 balLeft a x vx (T B bc y vy d)
             end
-        | a, (T R b x vx c) => 
+        | a, (T R b x vx c) =>
             match _join a b f' with
             | None => None
             | Some t' =>
                 Some (T R t' x vx c)
             end
-        | (T R a x vx b), c => 
+        | (T R a x vx b), c =>
             t' <- _join b c f' ;;
             Some (T R a x vx t')
-        end 
+        end
     end.
 
 Definition join (t1: Tree) (t2: Tree) : option Tree :=
@@ -200,13 +225,13 @@ Fixpoint del (x: Z) (s: Tree) (f: nat) : option Tree :=
         | E => Some E
         | (T _ a y vy b) =>
             (*! *)
-            if x <?? y then 
+            if x <?? y then
                 t' <- delLeft x a y vy b f' ;;
                 Some t'
-            else if y <?? x then 
+            else if y <?? x then
                 t' <- delRight x a y vy b f' ;;
                 Some t'
-            else 
+            else
                 t' <- join a b ;;
                 Some t'
             (*!! delete_4 *)
@@ -215,7 +240,7 @@ Fixpoint del (x: Z) (s: Tree) (f: nat) : option Tree :=
             let _tmp := delRight in
             if x <?? y then del x a f'
             else if y <?? x then del x b f'
-            else join a b 
+            else join a b
             *)
             (*!! delete_5 *)
             (*!
@@ -223,6 +248,7 @@ Fixpoint del (x: Z) (s: Tree) (f: nat) : option Tree :=
             else if x <?? y then delRight x a y vy b f'
             else join a b
             *)
+            (* !*)
         end
     end
 with delLeft (x: Z) (dl: Tree) (dy: Z) (dvy: Z) (dr: Tree) (f: nat): option Tree :=
@@ -230,11 +256,11 @@ with delLeft (x: Z) (dl: Tree) (dy: Z) (dvy: Z) (dr: Tree) (f: nat): option Tree
     | O => None
     | S f' =>
         match dl, dy, dvy, dr with
-        | (T B al ax avx ar), y, vy, b => 
+        | (T B al ax avx ar), y, vy, b =>
             t' <- (del x (T B al ax avx ar) f') ;;
             t'' <- balLeft t' y vy b ;;
             Some t''
-        | a, y, vy, b => 
+        | a, y, vy, b =>
             t' <- del x a f' ;;
             Some (T R t' y vy b)
         end
@@ -244,11 +270,11 @@ with delRight (x: Z) (dl: Tree) (dy: Z) (dvy: Z) (dr: Tree) (f: nat): option Tre
     | O => None
     | S f' =>
         match dl, dy, dvy, dr with
-        | a, y, vy, (T B bl bx bvx br) => 
+        | a, y, vy, (T B bl bx bvx br) =>
             t' <- (del x (T B bl bx bvx br) f') ;;
             t'' <- balRight a y vy t' ;;
             Some t''
-        | a, y, vy, b => 
+        | a, y, vy, b =>
             t' <- del x b f' ;;
             Some (T R a y vy t')
         end
@@ -262,6 +288,7 @@ Definition delete (x: Z) (t: Tree) : option Tree :=
     (*!
     del x t fuel
     *)
+    (* !*)
     .
 
 
