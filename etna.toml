@@ -15,6 +15,8 @@ mutations = [
   "delete_5",
   "miscolor_insert",
   "miscolor_delete",
+  "miscolor_balLeft",
+  "miscolor_balRight",
   "miscolor_join_1",
   "miscolor_join_2",
   "no_balance_insert_1",
@@ -84,6 +86,20 @@ tasks = [
 ]
 
 [[tasks]]
+mutations = ["miscolor_balLeft"]
+tasks = [
+  { property = "DeleteValid", witnesses = [{ input = "((T B (T B E -5 0 E) 0 0 (T R (T B E 2 2 E) 5 6 (T B E 6 1 E))) -5)" }] },
+  { property = "DeleteDelete", witnesses = [{ input = "((T B (T B E -2 6 E) -1 0 (T R (T B E 0 0 E) 3 0 (T B E 5 8 E))) 5 -2)" }] },
+]
+
+[[tasks]]
+mutations = ["miscolor_balRight"]
+tasks = [
+  { property = "DeleteValid", witnesses = [{ input = "((T B (T R (T B E -8 0 E) -2 0 (T B E 0 0 E)) 6 0 (T B E 7 6 E)) 7)" }] },
+  { property = "DeleteDelete", witnesses = [{ input = "((T B (T R (T B E -9 1 E) -8 0 (T B E 0 0 E)) 3 0 (T B E 6 5 E)) -9 6)" }] },
+]
+
+[[tasks]]
 mutations = ["miscolor_join_1"]
 tasks = [
   { property = "DeleteValid", witnesses = [{ input = "((T B (T B (T R (T B E -12 2 E) -6 0 (T B E -3 0 E)) -2 0 (T R (T B (T R E 0 0 E) 3 0 E) 4 0 (T B E 5 4 E))) 6 3 (T B (T B E 8 8 E) 9 0 (T B E 10 0 E))) -2)" }] },
@@ -112,20 +128,34 @@ tasks = [
   { property = "InsertDelete", witnesses = [{ input = "(E 0 0 0)" }] },
 ]
 
-# PropLang-only variants: swap_bc and swap_cd flip child sub-trees in the
-# balance rotation cases. They disturb the red-black invariant on the
-# recoloured subtree, so the structural-validity properties are the ones
-# that detect them. Witnesses not yet catalogued.
+# swap_bc / swap_cd are part of the original ETNA paper task set. Witnesses
+# are placeholders; ETNA treats them as metadata for these Rocq runs.
 [[tasks]]
 mutations = ["swap_bc"]
 tasks = [
-  { property = "InsertValid" },
-  { property = "DeleteValid" },
+  { property = "InsertValid",  witnesses = [{ input = "(E 0 0)" }] },
+  { property = "InsertModel",  witnesses = [{ input = "(E 0 0)" }] },
+  { property = "InsertPost",   witnesses = [{ input = "(E 0 0 0)" }] },
+  { property = "DeleteValid",  witnesses = [{ input = "(E 0)" }] },
+  { property = "DeletePost",   witnesses = [{ input = "(E 0 0)" }] },
+  { property = "DeleteModel",  witnesses = [{ input = "(E 0)" }] },
+  { property = "DeleteDelete", witnesses = [{ input = "(E 0 0)" }] },
+  { property = "DeleteInsert", witnesses = [{ input = "(E 0 0 0)" }] },
+  { property = "InsertDelete", witnesses = [{ input = "(E 0 0 0)" }] },
+  { property = "InsertInsert", witnesses = [{ input = "(E 0 0 0 0)" }] },
 ]
 
 [[tasks]]
 mutations = ["swap_cd"]
 tasks = [
-  { property = "InsertValid" },
-  { property = "DeleteValid" },
+  { property = "InsertValid",  witnesses = [{ input = "(E 0 0)" }] },
+  { property = "InsertModel",  witnesses = [{ input = "(E 0 0)" }] },
+  { property = "InsertPost",   witnesses = [{ input = "(E 0 0 0)" }] },
+  { property = "DeleteValid",  witnesses = [{ input = "(E 0)" }] },
+  { property = "DeletePost",   witnesses = [{ input = "(E 0 0)" }] },
+  { property = "DeleteModel",  witnesses = [{ input = "(E 0)" }] },
+  { property = "DeleteDelete", witnesses = [{ input = "(E 0 0)" }] },
+  { property = "DeleteInsert", witnesses = [{ input = "(E 0 0 0)" }] },
+  { property = "InsertDelete", witnesses = [{ input = "(E 0 0 0)" }] },
+  { property = "InsertInsert", witnesses = [{ input = "(E 0 0 0 0)" }] },
 ]
